@@ -701,7 +701,7 @@
             "audio_serve_url": "={{ $('Call Generate Video Audio').item.json.audioUrl }}",
             "video_url": "={{ $('Call Render Video').item.json.video_url }}",
             "job_id": "={{ $json.job_id }}",
-            "YouTube_privacy_status": "Public"
+            "YouTube_privacy_status": "Unlisted"
           },
           "matchingColumns": [
             "output_title",
