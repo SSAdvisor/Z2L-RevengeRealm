@@ -1,0 +1,863 @@
+{
+  "name": "Upload Video",
+  "nodes": [
+    {
+      "parameters": {
+        "name": "={{ $('Start').item.json.output_title }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1T3TQuKXWMJ17z6MGidR3VS0FcphM0uFd",
+          "mode": "list",
+          "cachedResultName": "KARMA'S LEDGER",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1T3TQuKXWMJ17z6MGidR3VS0FcphM0uFd"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        6120,
+        745
+      ],
+      "id": "981d9417-df53-4105-b089-f5c774a151db",
+      "name": "Google Drive1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EmOx2Vwbkitjzmsa",
+          "name": "GGL Drive seasonedsolutionsadvisor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdRfUB63lomJAzOD-0LxSFArA4UFxPsQRXojgFU1pFw",
+          "mode": "list",
+          "cachedResultName": "KARMA'S LEDGER THUMBNAILS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdRfUB63lomJAzOD-0LxSFArA4UFxPsQRXojgFU1pFw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iTh86abokbQ41HJG-qt0Qvu584WNoIphyQorKwywCzk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Video Title": "={{ $('Start').item.json.output_title }}",
+            "top_text": "={{ $('Start').item.json.output_top_text }}",
+            "bottom_text": "={{ $('Start').item.json.output_bottom_text }}",
+            "Tags": "={{ $('Start').item.json.output_tags }}",
+            "Hashtags": "={{ $('Start').item.json.output_hashtags }}",
+            "Audio ID": "={{ $('Start').item.json.audio_serve_url }}",
+            "Video URL": "={{ $('Start').item.json.video_url }}",
+            "Description": "={{ $('Start').item.json.output_description }}",
+            "Video ID": "={{ $('Start').item.json.video_url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Video ID",
+              "displayName": "Video ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Video URL",
+              "displayName": "Video URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Audio ID",
+              "displayName": "Audio ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video Title",
+              "displayName": "Video Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "top_text",
+              "displayName": "top_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bottom_text",
+              "displayName": "bottom_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Hashtags",
+              "displayName": "Hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        6120,
+        545
+      ],
+      "id": "6057aacf-ab43-4360-a9a4-f506c97c980f",
+      "name": "Thumbnail Data1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OzQ4PbEIP03p2VmI",
+          "name": "GGL Sheets seasonedsolutionsadvisor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the video title from the metadata node\nconst title = $('Start').first().json.output_title;\n\n// Get the first item from the Download Video File node\nconst item = $(\"Generate Thumbnail1\").first();\n\n// Set the new filename for the binary data\nitem.binary.data.fileName = `${title}.jpg`;\n\n// Return the modified item as an array (n8n expects an array of items)\nreturn [item];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5900,
+        420
+      ],
+      "id": "c6bd197d-3f5f-4118-9bb7-3cba1e4b9cdd",
+      "name": "Rename Thumbnail File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId={{ $('YouTube').item.json.uploadId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "videoId",
+              "value": "={{ $('YouTube').item.json.uploadId }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "media",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6340,
+        345
+      ],
+      "id": "267ffa86-1ac2-4085-b19a-93f281a1ca93",
+      "name": "Update Video Thumbnail",
+      "alwaysOutputData": true,
+      "credentials": {
+        "oAuth2Api": {
+          "id": "CPm5IJNnNMeihvsD",
+          "name": "YouTube Thumbnail Update"
+        },
+        "youTubeOAuth2Api": {
+          "id": "vNrHiuIWyrEntv1c",
+          "name": "YouTube SSAdvisor Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6120,
+        345
+      ],
+      "id": "0777b19a-19ec-4483-9450-fdf8716dc05c",
+      "name": "Wait 2M",
+      "webhookId": "4391de53-d4e1-47b3-a562-5b0f29a81da5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zero2launch.com/generate-thumbnail",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "top_text",
+              "value": "={{ $('Start').item.json.output_top_text }}"
+            },
+            {
+              "name": "bottom_text",
+              "value": "={{ $('Start').item.json.output_bottom_text }}"
+            },
+            {
+              "name": "avatar_url",
+              "value": "={{ $('Generate Thumbnail Avatar1').item.json.image_serve_url }}"
+            },
+            {
+              "name": "template",
+              "value": "temp_1"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5680,
+        420
+      ],
+      "id": "558840b1-2cf3-4aa8-a1b3-76e6dc20c758",
+      "name": "Generate Thumbnail1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Start').item.json.output_title }}",
+        "regionCode": "US",
+        "categoryId": "1",
+        "options": {
+          "defaultLanguage": "en",
+          "description": "={{ $('Start').item.json.output_description }}\n\n{{ $('Start').item.json.output_hashtags }}",
+          "embeddable": true,
+          "notifySubscribers": true,
+          "privacyStatus": "={{ $('Start').first().json.YouTube_privacy_status }}",
+          "publicStatsViewable": true,
+          "selfDeclaredMadeForKids": false,
+          "tags": "={{ $('Start').item.json.output_tags }}"
+        }
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        5020,
+        195
+      ],
+      "id": "1a8a0555-9219-4ae6-bc29-07d494ca9172",
+      "name": "YouTube",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "vNrHiuIWyrEntv1c",
+          "name": "YouTube SSAdvisor Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $binary.data.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1DgmgqMRMeP1RPbCEFOVmgbfsGnm4n17q",
+          "mode": "list",
+          "cachedResultName": "Video",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1DgmgqMRMeP1RPbCEFOVmgbfsGnm4n17q"
+        },
+        "options": {
+          "simplifyOutput": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        5020,
+        395
+      ],
+      "id": "1eade2e1-be9f-4956-9407-8cee7a6d7d23",
+      "name": "Upload Video",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EmOx2Vwbkitjzmsa",
+          "name": "GGL Drive seasonedsolutionsadvisor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $node[\"Upload Video\"].json[\"id\"] }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone",
+            "allowFileDiscovery": true
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        5240,
+        395
+      ],
+      "id": "8cb44e3c-aebf-4f3e-a6a1-b2776943ee6b",
+      "name": "Share Video",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EmOx2Vwbkitjzmsa",
+          "name": "GGL Drive seasonedsolutionsadvisor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zero2launch.com/download-image/url",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "A close-up portrait of a confident, smiling woman with natural makeup and long flowing hair, looking directly at the camera. The background should be bright and colorful, with soft gradients to make the subject stand out. The woman should have a friendly yet professional vibe, with expressive eyes and a relaxed but engaged posture. The style should be clean and modern, ideal for a YouTube thumbnail with a slight emphasis on high contrast for visual impact"
+            },
+            {
+              "name": "width",
+              "value": "384"
+            },
+            {
+              "name": "height",
+              "value": "720"
+            },
+            {
+              "name": "model",
+              "value": "flux"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5240,
+        195
+      ],
+      "id": "cf8caba9-90a2-4413-9dfa-561797803e00",
+      "name": "Generate Thumbnail Avatar1",
+      "retryOnFail": false,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9df511bd-4f73-4068-84e2-7c4a44636f71",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "Image generated and saved temporarily.",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5460,
+        145
+      ],
+      "id": "5b0df5f5-de85-4aa4-9048-798e17dcac53",
+      "name": "If error"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get node-specific static data (persists across workflow runs)\nconst data = $getWorkflowStaticData('node');\n\n// Initialize attempt if it doesn't exist\nif (typeof data.attempt === 'undefined') {\n  data.attempt = 0;\n}\n\n// Increment attempt\ndata.attempt += 1;\n\n// Return the current attempt count\nreturn [{ json: { attempts: data.attempt, }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5900,
+        20
+      ],
+      "id": "cc4a0d20-bd07-435d-83ac-a6d5dd70275c",
+      "name": "Increment Attempt1"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Generate Thumbnail node is DOWN; try again later"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        6340,
+        145
+      ],
+      "id": "ee04ba01-6651-47c3-bd81-48d0a0654d57",
+      "name": "Generate Thumbnail DOWN"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5680,
+        20
+      ],
+      "id": "ff41f678-8f62-4b10-ae72-b4a651f86f63",
+      "name": "Wait 1m",
+      "webhookId": "3374a659-ab82-444d-8fe1-527e76fd59cd"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "output_title",
+              "type": "any"
+            },
+            {
+              "name": "output_description",
+              "type": "any"
+            },
+            {
+              "name": "output_hashtags",
+              "type": "any"
+            },
+            {
+              "name": "output_tags",
+              "type": "any"
+            },
+            {
+              "name": "output_top_text",
+              "type": "any"
+            },
+            {
+              "name": "output_bottom_text",
+              "type": "any"
+            },
+            {
+              "name": "audio_serve_url",
+              "type": "any"
+            },
+            {
+              "name": "video_url",
+              "type": "any"
+            },
+            {
+              "name": "job_id",
+              "type": "any"
+            },
+            {
+              "name": "YouTube_privacy_status"
+            }
+          ]
+        }
+      },
+      "id": "fa9aebdc-832b-4a32-a1b9-979f90a2e053",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        4360,
+        295
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Start').item.json.video_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4580,
+        295
+      ],
+      "id": "14ddba10-47e6-478b-ba37-b8d5c5916b82",
+      "name": "Download Video File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the video title from the metadata node\nconst title = $('Start').first().json.video_title;\n\n// Get the first item from the Download Video File node\nconst item = $(\"Download Video File\").first();\n\n// Set the new filename for the binary data\nitem.binary.data.fileName = `${title}.mp4`;\n\n// Return the modified item as an array (n8n expects an array of items)\nreturn [item];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4800,
+        295
+      ],
+      "id": "74aa0541-f37c-44e6-b0c8-4607a672b9a1",
+      "name": "Rename Video File"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7d63dbc8-6511-43c5-9261-67ab95dc60bd",
+              "leftValue": "={{ $json.attempts }}",
+              "rightValue": 11,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6120,
+        145
+      ],
+      "id": "03791ed5-3a0c-4a0e-8e77-b45b680194e2",
+      "name": "If attempts < 11"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "YouTube": {
+      "main": [
+        [
+          {
+            "node": "Generate Thumbnail Avatar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video": {
+      "main": [
+        [
+          {
+            "node": "Share Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Video": {
+      "main": [
+        []
+      ]
+    },
+    "Generate Thumbnail1": {
+      "main": [
+        [
+          {
+            "node": "Rename Thumbnail File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Thumbnail Avatar1": {
+      "main": [
+        [
+          {
+            "node": "If error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait 2M": {
+      "main": [
+        [
+          {
+            "node": "Update Video Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Video Thumbnail": {
+      "main": [
+        []
+      ]
+    },
+    "Rename Thumbnail File": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Thumbnail Data1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait 2M",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1m": {
+      "main": [
+        [
+          {
+            "node": "Increment Attempt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Attempt1": {
+      "main": [
+        [
+          {
+            "node": "If attempts < 11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If error": {
+      "main": [
+        [
+          {
+            "node": "Wait 1m",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Thumbnail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thumbnail Data1": {
+      "main": [
+        []
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Download Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video File": {
+      "main": [
+        [
+          {
+            "node": "Rename Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Video File": {
+      "main": [
+        [
+          {
+            "node": "Upload Video",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If attempts < 11": {
+      "main": [
+        [
+          {
+            "node": "Generate Thumbnail Avatar1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Thumbnail DOWN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9faf9868-6879-4fd5-a45c-b351c9bb4fc0",
+  "meta": {
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "f2UW1ZkjbA3BSqQm",
+  "tags": []
+}

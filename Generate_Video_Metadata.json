@@ -1,0 +1,286 @@
+{
+  "name": "Generate Video Metadata",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zero2launch.com/generate-text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"openai-large\",\n  messages: [\n    {\n      role: \"system\",\n      content: $json.system_prompt\n    },\n    {\n      role: \"user\",\n      content: $json.user_prompt\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2820,
+        280
+      ],
+      "id": "877be7ab-9eb7-4aca-bff6-fcf248578e6b",
+      "name": "YouTube Metadata Generator",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code node extracts metadata (title, description, tags, hashtags, etc.) from an input string\n// that is expected to contain a JSON object.\n\n// Get the raw text input from the first item in the input data.\nconst rawInputString = $input.first().json.text;\n\n/**\n * Attempts to extract and \"fix\" a valid JSON string from potentially malformed or\n * truncated input, especially common LLM output issues like missing closing\n * quotes or braces at the very end.\n * WARNING: This is a highly speculative and brittle approach. The best solution\n * is always to ensure valid JSON generation upstream via responseSchema.\n * @param {string} str The input string.\n * @returns {string} The cleaned string, ideally a valid JSON.\n */\nfunction extractValidJsonAggressive(str) {\n  let cleanedStr = str.trim();\n\n  // Find the first opening curly brace and the last closing curly brace\n  const firstBrace = cleanedStr.indexOf('{');\n  let lastBrace = cleanedStr.lastIndexOf('}');\n\n  if (firstBrace === -1) {\n    // No opening brace found, cannot parse as JSON object\n    return cleanedStr;\n  }\n\n  // If there's an opening brace but no closing brace, or closing brace is before opening\n  if (lastBrace === -1 || lastBrace < firstBrace) {\n    // Assume truncation and try to append missing characters\n    cleanedStr = cleanedStr.substring(firstBrace); // Start from the first brace\n\n    // Aggressive attempts to close common truncation errors at the end\n    // (e.g., if the LLM stopped mid-field or before the final brace)\n    if (!cleanedStr.endsWith('\"') && cleanedStr.includes(':')) { // Heuristic: if it looks like a key-value pair and missing closing quote\n      cleanedStr += '\"';\n    }\n    if (!cleanedStr.endsWith('}')) {\n      cleanedStr += '}'; // Assume missing closing brace\n    }\n    // Re-check for trailing comma before the *newly added* closing brace\n    if (cleanedStr.endsWith(',}')) {\n      cleanedStr = cleanedStr.substring(0, cleanedStr.length - 2) + '}';\n    }\n    \n    // Attempt to parse this \"fixed\" string to get an actual lastBrace if it was missing\n    try {\n      JSON.parse(cleanedStr);\n      lastBrace = cleanedStr.lastIndexOf('}'); // Update lastBrace if successful\n    } catch (e) {\n      // Still invalid, proceed with the string as is for now.\n    }\n  }\n\n  // Re-extract based on potentially fixed braces, or original if no fix applied\n  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {\n    cleanedStr = cleanedStr.substring(firstBrace, lastBrace + 1);\n    // Final check for trailing comma before the absolute last brace\n    if (cleanedStr.endsWith(',}')) {\n      cleanedStr = cleanedStr.substring(0, cleanedStr.length - 2) + '}';\n    }\n  }\n\n\n  // Final check to see if it's parseable after aggressive attempts\n  try {\n    JSON.parse(cleanedStr);\n    return cleanedStr;\n  } catch (e) {\n    // Even after aggressive fixing, it's not valid JSON.\n    // Log the error and the problematic string for debugging upstream.\n    console.warn(\"Aggressive JSON fix failed:\", e.message, \"Attempted JSON:\", cleanedStr);\n    return str; // Fallback to original, let JSON.parse in main block fail\n  }\n}\n\nlet parsedData;\nlet outputTitle = '';\nlet outputDescription = '';\nlet outputTags = '';\nlet outputHashtags = ''; // New variable for hashtags\nlet outputTopText = '';\nlet outputBottomText = '';\n\ntry {\n  // Use the aggressive extraction function\n  const cleanedJsonString = extractValidJsonAggressive(rawInputString);\n\n  // Attempt to parse the cleaned string. If it's still malformed, this will throw an error.\n  parsedData = JSON.parse(cleanedJsonString);\n\n  // Check if the parsed result is a valid object.\n  if (typeof parsedData === 'object' && parsedData !== null) {\n    // Assign values, defaulting to empty string if a property is missing.\n    outputTitle = parsedData.title || '';\n    outputDescription = parsedData.description || '';\n\n    // Tags might be an array or string; handle both if possible, or force string.\n    if (Array.isArray(parsedData.tags)) {\n      outputTags = parsedData.tags.join(','); // Join array elements with commas\n    } else {\n      outputTags = parsedData.tags || '';\n    }\n    \n    // Handle hashtags, assuming it's a string, or array if AI might generate it as such.\n    if (Array.isArray(parsedData.hashtags)) {\n      // Join array elements with spaces, and ensure each hashtag starts with '#'\n      outputHashtags = parsedData.hashtags.map(tag => tag.startsWith('#') ? tag : '#' + tag).join(' ');\n    } else if (typeof parsedData.hashtags === 'string') {\n      // If it's a string, ensure all space-separated words are prefixed with #\n      outputHashtags = parsedData.hashtags.split(' ').map(tag => tag.startsWith('#') ? tag : '#' + tag).join(' ');\n    } else {\n      outputHashtags = '';\n    }\n\n    outputTopText = parsedData.top_text || '';\n    outputBottomText = parsedData.bottom_text || '';\n  } else {\n    // If parsing succeeded but result is not an object (e.g., just \"null\" or \"true\"),\n    // treat it as an error to ensure structured output.\n    throw new Error('Parsed JSON is not a valid object');\n  }\n} catch (e) {\n  // If any error occurs during parsing or extraction,\n  // we default to putting the raw input into the description\n  // and logging the error to help debugging upstream.\n  console.error(\"JSON parsing error (main block):\", e.message);\n  outputDescription = rawInputString; // Fallback: put raw input into description\n}\n\n// Return the structured output.\nreturn [{\n  json: {\n    output: {\n      title: outputTitle,\n      description: outputDescription,\n      tags: outputTags,\n      hashtags: outputHashtags, // Include hashtags in the output\n      top_text: outputTopText,\n      bottom_text: outputBottomText\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3260,
+        380
+      ],
+      "id": "3989b621-35c1-46ec-8652-369de3575d49",
+      "name": "YouTube Metadata Generator Cleaned"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83c36fbc-8584-47ce-a9f8-1cd6c6caa004",
+              "name": "output_title",
+              "value": "={{ $('YouTube Metadata Generator Cleaned').item.json.output.title }}",
+              "type": "string"
+            },
+            {
+              "id": "a87023c1-38aa-4e08-bd2a-14473b536528",
+              "name": "output_description",
+              "value": "={{ $('YouTube Metadata Generator Cleaned').item.json.output.description }}",
+              "type": "string"
+            },
+            {
+              "id": "a4cc00f1-0075-45c0-93d3-be4f9efb1e05",
+              "name": "output_hashtags",
+              "value": "={{ $('YouTube Metadata Generator Cleaned').item.json.output.hashtags }}",
+              "type": "string"
+            },
+            {
+              "id": "ae57bcae-15fc-4cc0-9639-c74485741b1d",
+              "name": "output_tags",
+              "value": "={{ $('YouTube Metadata Generator Cleaned').item.json.output.tags }}",
+              "type": "string"
+            },
+            {
+              "id": "99e455c2-6dfc-4730-9cf1-1c56c376bc9b",
+              "name": "output_top_text",
+              "value": "={{ $('YouTube Metadata Generator Cleaned').item.json.output.top_text }}",
+              "type": "string"
+            },
+            {
+              "id": "a28ae384-c0ee-4b64-8018-1ee7cc77a8f7",
+              "name": "output_bottom_text",
+              "value": "={{ $('YouTube Metadata Generator Cleaned').item.json.output.bottom_text }}",
+              "type": "string"
+            },
+            {
+              "id": "2752174a-dff7-44c6-b92c-7524a400ba00",
+              "name": "output_title_firstItem",
+              "value": "={{ $(\"YouTube Metadata Generator Cleaned\").first().json.output.title }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3480,
+        380
+      ],
+      "id": "81f7004b-a367-4451-a683-fa96903e3c23",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "output",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "b2953460-7fba-4e38-8b9b-90f47fcd9299",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2380,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "40bfb62e-8b24-477e-abde-c9306ab1bce8",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3040,
+        280
+      ],
+      "id": "df54ef27-6f6b-42de-9cd1-59939550fe79",
+      "name": "If no text returned"
+    },
+    {
+      "parameters": {
+        "errorMessage": "API returned empty text"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3260,
+        180
+      ],
+      "id": "43610ee3-e9e9-4b1f-909f-4f8a9f694798",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10744d10-9e8c-49b7-bc13-5a2b1d98aa08",
+              "name": "system_prompt",
+              "value": "You are a highly skilled YouTube SEO specialist and professional copywriter, tasked with creating compelling metadata for a dramatic, emotionally intense first-person revenge or redemption story (the user’s prompt is the voice-over script). Your goal is to maximize visibility, click-through rates, and viewer retention on YouTube.\n\nYour response must be a single JSON object with exactly these keys:\n\n\"title\": a long (HIGHLY IMPORTANT: Maximum of 90 characters long), highly descriptive, and emotionally charged title (aim for less than 80 characters, prioritizing keywords and emotional hooks in the first 60 characters) that evokes intense curiosity, tension, and clearly previews the dramatic arc. Crucially, avoid the em dash (—). Use colons (:), semicolons (;), or other appropriate punctuation. Ensure the title is keyword-rich and immediately compelling for search. \n\n\"description\": a multi-paragraph, comprehensive video description (aim for 2000-3000 characters) written from the first-person perspective (\"I\"). It MUST begin with the EXACT, full title as the first line to optimize for Youtube. The description should then expand on the emotional journey, vividly highlighting betrayal, struggle, growth, ultimate return, and the profound lessons learned. Incorporate relevant keywords naturally throughout. Do NOT use the em dash (—). Use colons (:), semicolons (;), or other appropriate punctuation instead. Include a strong call to action if appropriate (e.g., \"Don't forget to like, share, and subscribe!\").\n\n\"hashtags\": a space-separated string of 5-8 highly relevant and diverse hashtags (e.g., \"#redemptionstory #personalgrowth #overcomingadversity #revenge #successmindset\"). Focus on a mix of broad and specific terms.\n\n\"tags\": a space and comma-separated string of 15-20 highly relevant, broad, and specific YouTube tags, including long-tail keywords (e.g., \"redemption, drama, betrayal, success, personal story, overcoming challenges, life lessons, revenge narrative, self improvement, motivation, inspiration, personal development, true story, emotional journey, success story\").\n\n\"top_text\": a highly dramatic and emotionally intense 3-4 sentence statement (in all caps, but avoiding typical LLM repetitive phrasing or overly simplistic exclamations) meant for the top portion of a YouTube thumbnail. It must clearly introduce the betrayal or core conflict and build immediate, visceral tension. It MUST be at least 30 words long and feel like a human-crafted headline.\n\n\"bottom_text\": one exceptionally concise, powerful, and intriguing sentence (in all caps, avoiding typical LLM phrasing) meant for the bottom of a thumbnail. This should tease the dramatic twist, ultimate victory, or moment of profound reversal with maximum impact.\n\nRespond with only the JSON object—no markdown, code fences, or extra text.",
+              "type": "string"
+            },
+            {
+              "id": "b91856e5-5550-4a7c-b5fe-cf14f88730af",
+              "name": "user_prompt",
+              "value": "=Here is the transcript:  \n{{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2600,
+        280
+      ],
+      "id": "327c6459-46a1-44ec-a6a5-13ef87c18930",
+      "name": "Set AI Prompts"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "YouTube Metadata Generator": {
+      "main": [
+        [
+          {
+            "node": "If no text returned",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Set AI Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Metadata Generator Cleaned": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If no text returned": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YouTube Metadata Generator Cleaned",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set AI Prompts": {
+      "main": [
+        [
+          {
+            "node": "YouTube Metadata Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "608e2cce-1c09-4d0b-9a63-089f6ad713d6",
+  "meta": {
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "W7kPY2FGXspGHk8b",
+  "tags": []
+}

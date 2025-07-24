@@ -1,0 +1,618 @@
+{
+  "name": "Generate Video Audio",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zero2launch.com/generate-audio/url/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $('Start').item.json.output }} "
+            },
+            {
+              "name": "voice",
+              "value": "sage"
+            },
+            {
+              "name": "vibe",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 1000000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3480,
+        720
+      ],
+      "id": "4d47f1d3-9f4a-42aa-b25d-c5c0e3984687",
+      "name": "Generate Speech Url",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the audio URL from the previous node\nconst audioUrl = $input.item.json.audio_serve_url; \n\n// Prepare the data to be passed to the next node\n// This example assumes you want to pass the URL and the cleaned filename\nreturn [{\n  json: {\n    audioUrl: audioUrl, // Keep the full URL if you need it later\n    cleanedFilename: $('Start').first().json.output_title,\n  },\n  // To handle the binary data, you'll need to fetch the file in the next step.\n  // The 'data' property is where the binary data would go if you were handling it directly here.\n  // For Google Drive upload, it's better to use an HTTP Request node to download.\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4140,
+        120
+      ],
+      "id": "32573f85-ea80-41e5-8851-084d91cbc65c",
+      "name": "Cleaning URL"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get node-specific static data (persists across workflow runs)\nconst data = $getWorkflowStaticData('node');\n\n// Initialize attempt if it doesn't exist\nif (typeof data.attempt === 'undefined') {\n  data.attempt = 0;\n}\n\n// Increment attempt\ndata.attempt += 1;\n\n// Return updated state for next iteration\nreturn [{\n  json: {\n    job_id: $(\"Render Video\").first().json.job_id,\n    attempt: data.attempt // Persist current count\n  }\n}];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4140,
+        620
+      ],
+      "id": "846a8576-79a5-45fc-a1ce-c84067049b4b",
+      "name": "Attempt counter"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "output_title"
+            },
+            {
+              "name": "output_description"
+            },
+            {
+              "name": "output_hashtags"
+            },
+            {
+              "name": "output_tags"
+            },
+            {
+              "name": "output_top_text"
+            },
+            {
+              "name": "output_bottom_text"
+            },
+            {
+              "name": "output_title_firstItem"
+            },
+            {
+              "name": "output"
+            }
+          ]
+        }
+      },
+      "id": "ff7b94c3-4a69-4b8e-b493-bb34b4ca1212",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        3260,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3920,
+        120
+      ],
+      "id": "253165bb-9b35-492e-9089-34c43b008ddb",
+      "name": "Wait 3s",
+      "webhookId": "c9868512-fb1a-44a0-a5ab-31c7584d982c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6dae86f5-3103-4521-beb3-5bb2b50a5e69",
+              "leftValue": "={{ $json.attemps }}",
+              "rightValue": 25,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4360,
+        795
+      ],
+      "id": "67326603-08d6-43fb-88fb-b2d6a1d15b26",
+      "name": "If attempts > 25"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.error.status }}",
+                    "rightValue": 429,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "585302f7-d757-4a51-964f-60c21cd85006"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "E429"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "140d7771-a394-4a88-a2ce-e8f80be5b7a7",
+                    "leftValue": "={{ $json.error.status }}",
+                    "rightValue": 500,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "E500"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7ba3f3e5-5cc1-429e-8fd6-c720c595718d",
+                    "leftValue": "={{ $json.error.status }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Eother"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3700,
+        720
+      ],
+      "id": "90a84531-9cc7-415d-a1ee-0dbff520cf2b",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3920,
+        520
+      ],
+      "id": "2507144e-34c0-443d-a03b-2d006c1af735",
+      "name": "Wait 5s",
+      "webhookId": "80e95276-9b4d-4683-b236-25af0775d017"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3920,
+        720
+      ],
+      "id": "dafc36e7-2730-4c93-97fb-3202e1274f61",
+      "name": "Wait 2m",
+      "webhookId": "3c1e6b61-0ea8-4fbc-9816-9c39a1d6792b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "818824cf-a645-41d1-a293-fc6e90560828",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "Audio generated and saved temporarily.",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3700,
+        220
+      ],
+      "id": "481f6291-4517-47a3-9682-fe3295f13841",
+      "name": "If Audio Generated"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "587a4fa9-4d40-40db-8539-2d980c17f8ba",
+              "name": "audioUrl",
+              "value": "={{ $('Cleaning URL').item.json.audioUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "9f06dd65-4f38-49de-ae5a-44e6db6d6a6b",
+              "name": "timeout_status",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "54cfbdf5-3394-4aeb-a19e-94c5800a3722",
+              "name": "request_status",
+              "value": 200,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4800,
+        120
+      ],
+      "id": "d69d4bcf-8bc0-462d-9508-198ec9776118",
+      "name": "Return Success Values"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "587a4fa9-4d40-40db-8539-2d980c17f8ba",
+              "name": "audioUrl",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "961e9c88-d4fe-411e-86ab-00d7a6d3eee1",
+              "name": "data",
+              "value": "=",
+              "type": "object"
+            },
+            {
+              "id": "9f06dd65-4f38-49de-ae5a-44e6db6d6a6b",
+              "name": "timeout_status",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "54cfbdf5-3394-4aeb-a19e-94c5800a3722",
+              "name": "request_status",
+              "value": "={{ $('Generate Speech Url').item.json.error.status }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4780,
+        1020
+      ],
+      "id": "a5f32e31-e9dc-465f-b675-591f01449ef9",
+      "name": "Return Untrapped Error Values"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "587a4fa9-4d40-40db-8539-2d980c17f8ba",
+              "name": "audioUrl",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "961e9c88-d4fe-411e-86ab-00d7a6d3eee1",
+              "name": "data",
+              "value": "=",
+              "type": "object"
+            },
+            {
+              "id": "9f06dd65-4f38-49de-ae5a-44e6db6d6a6b",
+              "name": "timeout_status",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "54cfbdf5-3394-4aeb-a19e-94c5800a3722",
+              "name": "request_status",
+              "value": "={{ $('Generate Speech Url').item.json.error.status }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4780,
+        780
+      ],
+      "id": "15181ebe-a1ce-4531-9200-3d1e5fa90bcf",
+      "name": "Return Attempts Exceeded Values"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Unknown API Problem"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3920,
+        320
+      ],
+      "id": "b3509546-d0fa-48ae-b3b5-8b98f079cd5d",
+      "name": "Stop and Error"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Generate Speech Url": {
+      "main": [
+        [
+          {
+            "node": "If Audio Generated",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleaning URL": {
+      "main": [
+        [
+          {
+            "node": "Return Success Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attempt counter": {
+      "main": [
+        [
+          {
+            "node": "If attempts > 25",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Generate Speech Url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3s": {
+      "main": [
+        [
+          {
+            "node": "Cleaning URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If attempts > 25": {
+      "main": [
+        [
+          {
+            "node": "Return Attempts Exceeded Values",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Speech Url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 2m",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Untrapped Error Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s": {
+      "main": [
+        [
+          {
+            "node": "Attempt counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2m": {
+      "main": [
+        [
+          {
+            "node": "Attempt counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Audio Generated": {
+      "main": [
+        [
+          {
+            "node": "Wait 3s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f337ff2e-a5e9-4cac-8685-f55b42d6f2cb",
+  "meta": {
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "0CUQBOTAzq91cVkd",
+  "tags": []
+}

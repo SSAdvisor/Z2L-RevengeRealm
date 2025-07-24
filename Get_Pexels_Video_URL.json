@@ -1,0 +1,134 @@
+{
+  "name": "Get Pexels Video URL",
+  "nodes": [
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import random\n\n# Pick one random item\nrandom_item = random.choice(items)\n\n# Work on its JSON payload\ndata = random_item[\"json\"]\n\n# Remove \".mp3\" if present\nif isinstance(data.get(\"name\"), str) and data[\"name\"].lower().endswith(\".mp3\"):\n    data[\"name\"] = data[\"name\"][:-4]\n\n# Return the modified item\nreturn {\"json\": data}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        260
+      ],
+      "id": "e8ea7b4c-c6ac-4914-9b51-4fb60b4c61cb",
+      "name": "Background Video Urls Cleaned"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19d7fcf4-9427-4769-ae59-557d0b2ab720",
+              "name": "video_url",
+              "value": "={{ $('Background Video Urls Cleaned').item.json.video_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1280,
+        260
+      ],
+      "id": "7bd9c25d-b2f4-43e6-86f2-f8a656ce68ad",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "3bb812c2-07d8-437b-830e-c999f40d6d7b",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        620,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DqLddNhrweOQ17DHDpBfcAhnC1T9OxqtAvPO8GTrbPo",
+          "mode": "list",
+          "cachedResultName": "pexels_background_videos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DqLddNhrweOQ17DHDpBfcAhnC1T9OxqtAvPO8GTrbPo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 68050459,
+          "mode": "list",
+          "cachedResultName": "Video_List_with_Minutes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DqLddNhrweOQ17DHDpBfcAhnC1T9OxqtAvPO8GTrbPo/edit#gid=68050459"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        840,
+        260
+      ],
+      "id": "1fc16d8d-5de6-48db-a96e-15249c86ace4",
+      "name": "Background Video Url",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OzQ4PbEIP03p2VmI",
+          "name": "GGL Sheets seasonedsolutionsadvisor"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Background Video Url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Background Video Urls Cleaned": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Background Video Url": {
+      "main": [
+        [
+          {
+            "node": "Background Video Urls Cleaned",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4f3debd8-e1ee-4ed1-be5d-3fb4c0dc8361",
+  "meta": {
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "sSHEErvsinncBjba",
+  "tags": []
+}

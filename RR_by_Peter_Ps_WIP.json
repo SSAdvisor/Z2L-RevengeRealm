@@ -1,0 +1,1142 @@
+{
+  "name": "RR by Peter Ps WIP",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        580,
+        420
+      ],
+      "id": "e02c9061-0c3a-476a-854e-212b4903687d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1240,
+        640
+      ],
+      "id": "3a4a2af0-0cc3-4097-a19f-71443f0b2821",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZfqOrDknax7Ap09n",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "={{ $('AI Fields').item.json.think_about }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        640
+      ],
+      "id": "4d824226-a5cb-453b-b160-fca8b0824558",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Fields').item.json.user_message }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "={{ $('AI Fields').item.json.system_message }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1272,
+        420
+      ],
+      "id": "da26296a-901c-4368-99e1-6db731cb5815",
+      "name": "Generate Story Topic",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"title_idea\": {\n      \"type\": \"string\",\n      \"description\": \"A very short, catchy phrase for the core concept (e.g., 'The Alchemist's Garden').\"\n    },\n    \"premise\": {\n      \"type\": \"string\",\n      \"description\": \"A detailed, one-paragraph summary of the story premise (around 250-400 characters).\"\n    },\n    \"protagonist_focus\": {\n      \"type\": \"string\",\n      \"description\": \"A key skill, identity, or passion of the protagonist (e.g., 'culinary innovator').\"\n    },\n    \"core_conflict_type\": {\n      \"type\": \"string\",\n      \"description\": \"The nature of the initial betrayal (e.g., 'professional sabotage').\"\n    },\n    \"field_of_triumph\": {\n      \"type\": \"string\",\n      \"description\": \"The specific, often unconventional, domain where they ultimately succeed (e.g., 'sustainable food systems').\"\n    }\n  },\n  \"required\": [\"title_idea\", \"premise\", \"protagonist_focus\", \"core_conflict_type\", \"field_of_triumph\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1480,
+        640
+      ],
+      "id": "e32d9ddb-eba8-4193-a9c2-6cef05188946",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sSHEErvsinncBjba",
+          "mode": "list",
+          "cachedResultName": "Get Pexels Video URL"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        420
+      ],
+      "name": "Call Get Pexels Video URL",
+      "id": "d4865c6b-6750-4ce5-96d3-b235f9ee3f7e"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1900,
+        420
+      ],
+      "id": "4dad2348-0a3a-43b6-97e5-58010c147da0",
+      "name": "Wait 3s",
+      "webhookId": "5ed10a7b-6042-4920-8dbe-0a3bc4462492"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2340,
+        420
+      ],
+      "id": "b9aa27cb-2c2c-4792-85b4-ff2f6cfd20dd",
+      "name": "Wait 3s - 2",
+      "webhookId": "b6345d10-68bb-4272-b33b-151004bff7a9"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nVxIGWVgjzSsTVOf",
+          "mode": "list",
+          "cachedResultName": "Generate Transcript"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "output_core_conflict_type": "={{ $json.output.core_conflict_type }}",
+            "output_protagonist_focus": "={{ $json.output.protagonist_focus }}",
+            "output_field_of_triumph": "={{ $json.output.field_of_triumph }}",
+            "output_title_idea": "={{ $json.output.title_idea }}",
+            "output_premise": "={{ $json.output.premise }}"
+          },
+          "matchingColumns": [
+            "Execute_Z2L_GET_API_KEYS_V4_allItems",
+            "output_core_conflict_type",
+            "output_protagonist_focus",
+            "output_field_of_triumph",
+            "output_title_idea",
+            "output_premise"
+          ],
+          "schema": [
+            {
+              "id": "output_core_conflict_type",
+              "displayName": "output_core_conflict_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_protagonist_focus",
+              "displayName": "output_protagonist_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_field_of_triumph",
+              "displayName": "output_field_of_triumph",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_title_idea",
+              "displayName": "output_title_idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_premise",
+              "displayName": "output_premise",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        420
+      ],
+      "name": "Call Generate Transcript",
+      "id": "d5386492-3e7a-4d2c-a727-bfd7005f124b"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "W7kPY2FGXspGHk8b",
+          "mode": "list",
+          "cachedResultName": "Generate Video Metadata"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "output": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Execute_Z2L_GET_API_KEYS_V4_allItems",
+            "output"
+          ],
+          "schema": [
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2120,
+        420
+      ],
+      "name": "Call Generate Video Metadata",
+      "id": "630e428d-3474-4408-a4f0-3719c162cf4b"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0CUQBOTAzq91cVkd",
+          "mode": "list",
+          "cachedResultName": "Generate Video Audio"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "output_title": "={{ $json.output_title }}",
+            "output_description": "={{ $json.output_description }}",
+            "output_hashtags": "={{ $json.output_hashtags }}",
+            "output_tags": "={{ $json.output_tags }}",
+            "output_top_text": "={{ $json.output_top_text }}",
+            "output_bottom_text": "={{ $json.output_bottom_text }}",
+            "output_title_firstItem": "={{ $json.output_title_firstItem }}",
+            "output": "={{ $('Call Generate Transcript').item.json.output }}"
+          },
+          "matchingColumns": [
+            "Execute_Z2L_GET_API_KEYS_V4_allItems",
+            "output",
+            "output_title_firstItem_firstItem"
+          ],
+          "schema": [
+            {
+              "id": "output_title",
+              "displayName": "output_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output_description",
+              "displayName": "output_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output_hashtags",
+              "displayName": "output_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output_tags",
+              "displayName": "output_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output_top_text",
+              "displayName": "output_top_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output_bottom_text",
+              "displayName": "output_bottom_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output_title_firstItem",
+              "displayName": "output_title_firstItem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2560,
+        420
+      ],
+      "name": "Call Generate Video Audio",
+      "id": "1d8bb613-ac94-4bec-b8f5-8a9ad57d5baa"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ToY5eJmuOnfYql6J",
+          "mode": "list",
+          "cachedResultName": "Save Audio File"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "audioUrl": "={{ $json.audioUrl }}",
+            "cleanedFilename": "={{ $('Call Generate Video Metadata').item.json.output_title }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "audioUrl",
+              "displayName": "audioUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "cleanedFilename",
+              "displayName": "cleanedFilename",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3000,
+        220
+      ],
+      "name": "Call Save Audio File",
+      "id": "5c2a3902-6a4d-462b-b91c-77ea68667a85",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "uEwfRgKMqAMs1nHF",
+          "mode": "list",
+          "cachedResultName": "Render Video"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "webContentLink": "={{ $('Call Save Audio File').item.json.webContentLink }}",
+            "bg_video_url": "={{ $('Call Get Pexels Video URL').item.json.video_url }}",
+            "video_title": "={{ $('Call Generate Video Metadata').item.json.output_title }}"
+          },
+          "matchingColumns": [
+            "Get_API_Keys_allItems",
+            "webContentLink",
+            "video_url",
+            "output_title_firstItem_firstItem"
+          ],
+          "schema": [
+            {
+              "id": "webContentLink",
+              "displayName": "webContentLink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bg_video_url",
+              "displayName": "bg_video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "video_title",
+              "displayName": "video_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3220,
+        220
+      ],
+      "name": "Call Render Video",
+      "id": "8f40544c-25a7-4c18-9071-a9243a82c24c"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.request_status }}",
+                    "rightValue": 200,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "d8dd4ab6-6930-420c-8790-2d170b27272d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "RS200"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "db66cb58-836a-4d36-917b-00709320502d",
+                    "leftValue": "={{ $json.timeout_status }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TStrue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "89167640-a438-4664-9d98-b50af7981209",
+                    "leftValue": "={{ $json.request_status }}",
+                    "rightValue": 200,
+                    "operator": {
+                      "type": "number",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "RSunknown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2780,
+        420
+      ],
+      "id": "46590a0c-5fb3-4565-a048-26808b2f70bc",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Unknown API Error"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        620
+      ],
+      "id": "46d252c2-3b31-46be-bd62-d438b9af9272",
+      "name": "Unknown API Error"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.timeout_status }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    },
+                    "id": "07d46d07-a222-470a-b8ca-a6a0ac20e8a8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TSfalse"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "80afa22b-bb01-48cd-a459-b23f282ad864",
+                    "leftValue": "={{ $json.timeout_status }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TStrue"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3440,
+        220
+      ],
+      "id": "3e02cf6b-d0a2-4936-9766-26362b674f9d",
+      "name": "Switch 2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "f2UW1ZkjbA3BSqQm",
+          "mode": "list",
+          "cachedResultName": "Upload Video"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "output_title": "={{ $('Call Generate Video Metadata').item.json.output_title }}",
+            "output_description": "={{ $('Call Generate Video Metadata').item.json.output_description }}",
+            "output_hashtags": "={{ $('Call Generate Video Metadata').item.json.output_hashtags }}",
+            "output_tags": "={{ $('Call Generate Video Metadata').item.json.output_tags }}",
+            "output_top_text": "={{ $('Call Generate Video Metadata').item.json.output_top_text }}",
+            "output_bottom_text": "={{ $('Call Generate Video Metadata').item.json.output_bottom_text }}",
+            "audio_serve_url": "={{ $('Call Generate Video Audio').item.json.audioUrl }}",
+            "video_url": "={{ $('Call Render Video').item.json.video_url }}",
+            "job_id": "={{ $json.job_id }}",
+            "YouTube_privacy_status": "Public"
+          },
+          "matchingColumns": [
+            "output_title",
+            "output_description",
+            "output_hashtags",
+            "output_tags",
+            "Get_API_Keys_allItems",
+            "output_top_text",
+            "output_bottom_text",
+            "audio_serve_url",
+            "video_url",
+            "output_title_firstItem_firstItem",
+            "attempt_firstItem_firstItem",
+            "job_id_firstItem_firstItem"
+          ],
+          "schema": [
+            {
+              "id": "output_title",
+              "displayName": "output_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_description",
+              "displayName": "output_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_hashtags",
+              "displayName": "output_hashtags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_tags",
+              "displayName": "output_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_top_text",
+              "displayName": "output_top_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output_bottom_text",
+              "displayName": "output_bottom_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "audio_serve_url",
+              "displayName": "audio_serve_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "video_url",
+              "displayName": "video_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "YouTube_privacy_status",
+              "displayName": "YouTube_privacy_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3660,
+        120
+      ],
+      "name": "Call Upload Video",
+      "id": "cca47c66-c59f-4c7d-9b74-8f71ed114f91"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Retry Timed Out"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        420
+      ],
+      "id": "6019e807-b621-4713-b2c9-7f7e5a0e0809",
+      "name": "Generate Video Retry Timed Out"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Retry timed out"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        320
+      ],
+      "id": "b8de760b-0e49-4840-bec3-2d6dff67849a",
+      "name": "Render Video Retry Timed Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0889a4a7-875a-4b12-9bfd-794322f5692b",
+              "name": "user_message",
+              "value": "You are a highly creative story premise generator for YouTube long-form dramatic narratives. Your expertise lies in crafting first-person concepts focused on profound betrayal, relentless struggle, and ultimate triumph with deeply cathartic resolutions. You will always generate a unique, compelling, and non-repetitive premise. Your output must ALWAYS be a single JSON object.",
+              "type": "string"
+            },
+            {
+              "id": "884e3997-9848-41fa-b38b-8b952a83ea07",
+              "name": "system_message",
+              "value": "Generate one fresh story premise for a dramatic first-person narrative. The premise must define:\n1.  The specific nature of the protagonist's initial betrayal or dismissal.\n2.  The unusual or unexpected field/ambition they pursue after this setback.\n3.  Why this chosen field was initially ridiculed or dismissed by others.\n\nEnsure the premise is distinctly different from creative arts or game development narratives.\n\nExamples of diverse scenarios to draw inspiration from (do not directly repeat these):\n* A publicly shamed chef, ruined by a rival's sabotage, finds triumph by pioneering sustainable insect-based gastronomy, a concept initially mocked as 'disgusting' and 'unsanitary'.\n* A linguist, whose groundbreaking research on ancient languages was stolen by a manipulative mentor, achieves global recognition by creating an ethical AI for deciphering forgotten languages, a venture initially dismissed as 'fantasy' by academics.\n* An Olympic equestrian, whose career ended due to injury caused by jealous competitors, achieves success developing therapeutic riding programs for disabled veterans, initially scorned as 'soft' by elite sports.\n* A dismissed corporate whistleblower, betrayed by executives for exposing corruption, builds a global non-profit dedicated to transparent supply chains, a mission initially ridiculed as 'naive' by industry giants.\n\nFormat your response as a JSON object with the following keys:\n-   `title_idea`: (e.g., \"The Alchemist's Garden\")\n-   `premise`: (Detailed one-paragraph summary)\n-   `protagonist_focus`: (e.g., \"culinary innovator\", \"ancient historian\", \"equine therapist\")\n-   `core_conflict_type`: (e.g., \"professional sabotage\", \"intellectual theft\", \"reputational destruction\")\n-   `field_of_triumph`: (e.g., \"sustainable food systems\", \"AI-powered historical analysis\", \"adaptive sports therapy\")\n\nThe entire JSON output must not exceed 700 characters. Ensure the `premise` value itself is concise, around 250-400 characters.",
+              "type": "string"
+            },
+            {
+              "id": "86b10b74-fba1-442e-a290-b5fdac48eba8",
+              "name": "think_about",
+              "value": "Use the tool to think about something. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed.",
+              "type": "string"
+            },
+            {
+              "id": "1839d0fa-b5cd-4d7c-a03a-ab16cd308741",
+              "name": "output_schema",
+              "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"title_idea\": {\n      \"type\": \"string\",\n      \"description\": \"A very short, catchy phrase for the core concept (e.g., 'The Alchemist's Garden').\"\n    },\n    \"premise\": {\n      \"type\": \"string\",\n      \"description\": \"A detailed, one-paragraph summary of the story premise (around 250-400 characters).\"\n    },\n    \"protagonist_focus\": {\n      \"type\": \"string\",\n      \"description\": \"A key skill, identity, or passion of the protagonist (e.g., 'culinary innovator').\"\n    },\n    \"core_conflict_type\": {\n      \"type\": \"string\",\n      \"description\": \"The nature of the initial betrayal (e.g., 'professional sabotage').\"\n    },\n    \"field_of_triumph\": {\n      \"type\": \"string\",\n      \"description\": \"The specific, often unconventional, domain where they ultimately succeed (e.g., 'sustainable food systems').\"\n    }\n  },\n  \"required\": [\"title_idea\", \"premise\", \"protagonist_focus\", \"core_conflict_type\", \"field_of_triumph\"]\n}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "video_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1020,
+        420
+      ],
+      "id": "fd3944bf-2332-4a53-a6c0-12e6ce23e18d",
+      "name": "AI Fields",
+      "notesInFlow": true,
+      "notes": "The output_schema field data can only be copied from here and pasted into the Structured Output Parser. This is a known limitation."
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-06-26T00:00:54.017+00:00",
+          "Readable date": "June 26th 2025, 12:00:54 am",
+          "Readable time": "12:00:54 am",
+          "Day of week": "Thursday",
+          "Year": "2025",
+          "Month": "June",
+          "Day of month": "26",
+          "Hour": "00",
+          "Minute": "00",
+          "Second": "54",
+          "Timezone": "UTC (UTC+00:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call Get Pexels Video URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Story Topic",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generate Story Topic",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Story Topic": {
+      "main": [
+        [
+          {
+            "node": "Call Generate Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Story Topic",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Get Pexels Video URL": {
+      "main": [
+        [
+          {
+            "node": "AI Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3s": {
+      "main": [
+        [
+          {
+            "node": "Call Generate Video Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3s - 2": {
+      "main": [
+        [
+          {
+            "node": "Call Generate Video Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Generate Transcript": {
+      "main": [
+        [
+          {
+            "node": "Wait 3s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Generate Video Metadata": {
+      "main": [
+        [
+          {
+            "node": "Wait 3s - 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Generate Video Audio": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Save Audio File": {
+      "main": [
+        [
+          {
+            "node": "Call Render Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Render Video": {
+      "main": [
+        [
+          {
+            "node": "Switch 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Call Save Audio File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Video Retry Timed Out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown API Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch 2": {
+      "main": [
+        [
+          {
+            "node": "Call Upload Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Render Video Retry Timed Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Fields": {
+      "main": [
+        [
+          {
+            "node": "Generate Story Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "de7b717a-8fd6-409d-a440-1c953e230d98",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "brabhtyi4edYrlJY",
+  "tags": [
+    {
+      "createdAt": "2025-06-10T22:05:47.667Z",
+      "updatedAt": "2025-06-10T22:05:47.667Z",
+      "id": "hjVqEkdEv7CUhSMx",
+      "name": "youtube"
+    },
+    {
+      "createdAt": "2025-07-23T13:51:41.484Z",
+      "updatedAt": "2025-07-23T13:51:41.484Z",
+      "id": "iabCR3ofIG7JDIYA",
+      "name": "WIP"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "name": "Save Audio File",
+  "nodes": [
+    {
+      "parameters": {
+        "inputDataFieldName": "=data",
+        "name": "={{ $('Start').item.json.cleanedFilename }}.mp3",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1hF9C_wF9zLwrIFJberCgxhXCydkKvHua",
+          "mode": "list",
+          "cachedResultName": "Audio",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hF9C_wF9zLwrIFJberCgxhXCydkKvHua"
+        },
+        "options": {
+          "simplifyOutput": false
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2820,
+        80
+      ],
+      "id": "938c5e9b-6a22-4fbe-9284-9e7ac3b4e706",
+      "name": "Upload Audio",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EmOx2Vwbkitjzmsa",
+          "name": "GGL Drive seasonedsolutionsadvisor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $node[\"Upload Audio\"].json[\"id\"] }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone",
+            "allowFileDiscovery": true
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3040,
+        80
+      ],
+      "id": "fa449284-4354-4e72-8543-4e03e340a1e8",
+      "name": "Share Audio",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "EmOx2Vwbkitjzmsa",
+          "name": "GGL Drive seasonedsolutionsadvisor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01c990d1-2e7c-4a5a-b60c-36bd1c799d74",
+              "name": "webContentLink",
+              "value": "={{ $('Upload Audio').item.json.webContentLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3260,
+        80
+      ],
+      "id": "08add11b-f388-4ff1-ae4b-ebcd9f59da82",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "audioUrl"
+            },
+            {
+              "name": "cleanedFilename"
+            }
+          ]
+        }
+      },
+      "id": "a6e2714d-d702-4ab9-b886-b98815f328e7",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2380,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.audioUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2600,
+        80
+      ],
+      "id": "1c166f66-999a-4ae7-bfcc-bae5ad5f738b",
+      "name": "Download Audio",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Upload Audio": {
+      "main": [
+        [
+          {
+            "node": "Share Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Download Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Audio": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio": {
+      "main": [
+        [
+          {
+            "node": "Upload Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fecba420-3b11-4aad-8d93-a23b0a80d77a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "ToY5eJmuOnfYql6J",
+  "tags": []
+}

@@ -1,0 +1,481 @@
+{
+  "name": "Render Video",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zero2launch.com/generate-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "audio_url",
+              "value": "={{ $('Start').item.json.webContentLink }}"
+            },
+            {
+              "name": "bg_video_url",
+              "value": "={{ $('Start').item.json.bg_video_url }}"
+            },
+            {
+              "name": "template",
+              "value": "temp_1"
+            },
+            {
+              "name": "server",
+              "value": "vps2"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3480,
+        270
+      ],
+      "id": "429c456c-d81d-443a-bf71-797c282285b5",
+      "name": "Render Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "Video Generation FAILED"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4360,
+        95
+      ],
+      "id": "fc884958-0c3d-4b7d-9a09-b3a94a67730a",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "45772290-270d-4443-85a7-4333e0373628",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "failed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4140,
+        195
+      ],
+      "id": "e8a55976-2188-40d8-99ba-95cdefb9ef9d",
+      "name": "If failed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous attempt count from LOOP input\nconst previousAttempt = $input.first().json.attempt || 0;\n\n// Increment attempt counter\nconst attempt = previousAttempt + 1;\n\n// Throw error when max attempts reached\nif (attempt >= 10) {\n  throw new Error('Polling exceeded max attempts');\n}\n\n// Return updated state for next iteration\nreturn [{\n  json: {\n    job_id: $('Render Video').first().json.job_id,\n    attempt // Persist current count\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4800,
+        470
+      ],
+      "id": "4f5914da-827f-4231-9166-c00adfaae89f",
+      "name": "Increment Attempt"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4580,
+        395
+      ],
+      "id": "4fc7b0ff-75ee-4650-9cc9-ee3df62c49b8",
+      "name": "Wait 60s",
+      "webhookId": "5aa745be-ba91-4c80-92ee-0c96be324a61"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0a4a21bd-25a3-4a5d-882b-c3a89a2e582c",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "875ede76-e882-49a3-8d18-d4905ff8ffb2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "SUCCESS",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4360,
+        295
+      ],
+      "id": "dfa87c8e-93b7-41f8-983d-955e4874abd0",
+      "name": "If Done?"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.zero2launch.com/status/{{ $('Render Video').item.json.job_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "server",
+              "value": "vps2"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "*/*"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3920,
+        270
+      ],
+      "id": "706f2ba3-051d-4e3f-91fe-ad9e0da8bb0a",
+      "name": "Check Video Status",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f16095e-7cb9-430d-bdc1-f4b459a5efc6",
+              "name": "video_url",
+              "value": "={{ $('Check Video Status').item.json.video_url }}",
+              "type": "string"
+            },
+            {
+              "id": "0ee93b4a-9037-422c-8a86-6429e994e529",
+              "name": "job_id",
+              "value": "={{ $('Render Video').first().json.job_id }}",
+              "type": "string"
+            },
+            {
+              "id": "43b18f72-204b-477a-9eef-d93c00620037",
+              "name": "timeout_status",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5240,
+        120
+      ],
+      "id": "68c26953-98e7-483c-83a4-7148e6815659",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "webContentLink",
+              "type": "any"
+            },
+            {
+              "name": "bg_video_url",
+              "type": "any"
+            },
+            {
+              "name": "video_title",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "581a079b-a3cd-496f-95d0-4d37f062ed5e",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        3260,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e58ab472-5de2-45e4-9bf7-533a7635aba0",
+              "leftValue": "={{ $json.attempt }}",
+              "rightValue": 25,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5020,
+        460
+      ],
+      "id": "aab88053-fd5d-4d74-aa74-109c84d60980",
+      "name": "If attempts > 25"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f2785f6-f195-49d3-8327-ed2d9b4a77c2",
+              "name": "video_url",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "e12dacb8-1a21-4eec-89b1-47b7a67ec533",
+              "name": "job_id",
+              "value": "={{ $('Render Video').first().json.job_id }}",
+              "type": "string"
+            },
+            {
+              "id": "0faf5334-935b-4f5c-96af-b21e5a377edf",
+              "name": "timeout_status",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "1df95356-6ed5-4cd3-80d4-3ab5227ae3de",
+              "name": "data",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5240,
+        360
+      ],
+      "id": "bb82c31e-2aed-4acc-9165-f75224eaa660",
+      "name": "Return Timeout"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Render Video": {
+      "main": [
+        [
+          {
+            "node": "Check Video Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If failed": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Attempt": {
+      "main": [
+        [
+          {
+            "node": "If attempts > 25",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60s": {
+      "main": [
+        [
+          {
+            "node": "Increment Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Done?": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Video Status": {
+      "main": [
+        [
+          {
+            "node": "If failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Render Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If attempts > 25": {
+      "main": [
+        [
+          {
+            "node": "Return Timeout",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Video Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "127e182d-1541-45b5-85e2-08d990dfee03",
+  "meta": {
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "uEwfRgKMqAMs1nHF",
+  "tags": []
+}

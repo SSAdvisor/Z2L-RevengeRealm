@@ -1,0 +1,201 @@
+{
+  "name": "Generate Transcript",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zero2launch.com/generate-text",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"openai\",\n  messages: [\n    {\n      role: \"system\",\n      content: $json.system_prompt\n    },\n    {\n      role: \"user\",\n      content: $json.user_prompt\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        295
+      ],
+      "id": "94693e24-a1c5-44eb-8ca6-46647a80f7e6",
+      "name": "Transcript Generator",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lymWqGQ67PUobVpS",
+          "name": "Header Auth Z2L"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text;\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n\n  // Only return parsed if it's an object or array\n  if (typeof parsed === 'object') {\n    return [{ json: { output: parsed } }];\n  } else {\n    throw new Error('Parsed value is not an object');\n  }\n} catch (e) {\n  // Return the raw text if not JSON\n  return [{ json: { output: raw } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        295
+      ],
+      "id": "5cd385c6-19cc-47e0-90ed-342c701fb757",
+      "name": "Transcript Generator Cleaned"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10744d10-9e8c-49b7-bc13-5a2b1d98aa08",
+              "name": "system_prompt",
+              "value": "=You are a master storyteller, crafting first-person narratives that are not merely stories, but visceral emotional experiences designed to captivate a YouTube audience from the very first second. Your style fuses the raw, emotionally charged drama of Revenge Realm, the profound human resilience and cathartic redemption arcs characteristic of Frank Darabont, and the introspective journey of self-discovery and destiny found in Paulo Coelho's most resonant works.\n\nYour ultimate goal is to create intensely compelling narratives of betrayal, relentless struggle, profound personal growth, and undeniable triumph, always culminating in a definitively happy and deeply fulfilling ending for the protagonist.\n\nFor this story, adopt the precise tone of voice of George Blackman, known for his urgent, conversational, and deeply relatable narratives that optimize for emotional resonance and viewer retention. This distinct tone will ensure the story feels authentic, personal, and immediately grabs the listener, maintaining an unbreakable grip until the cathartic conclusion.\n\nHere is the specific premise for this story:\n\n**Story Concept:** {{ $json.output_title_idea }}\n**Core Conflict Type:** {{ $json.output_core_conflict_type }}\n**Protagonist's Focus:** {{ $json.output_protagonist_focus }}\n**Field of Triumph:** {{ $json.output_field_of_triumph }}\n**Detailed Premise:** \"{{ $json.output_premise }}\"\n\nEach story must follow this exact, high-impact format:\n\nBEGIN WITH A GRIPPING HOOK: Launch the story with an immediate, shattering emotional impact. This isn't just a sentence; it's a detonation of the core conflict, a pivotal moment of brutal rejection, devastating humiliation, or the shocking aftermath of profound betrayal. This hook must seize the listener's attention by the throat, provoking an instant, visceral reaction and an overwhelming urgency to know what happens next. It must not merely hint at, but explicitly frame the profound life lesson or transformative journey that is about to unfold. Imagine the opening scene of a blockbuster drama or a viral documentary: a shocking revelation, a life-altering ultimatum, or the catastrophic consequence of a broken trust, leaving the audience breathless, desperate for answers, and unable to look away. This is your \"pattern interrupt\", designed to shatter expectations and compel immediate, unwavering emotional investment. **Ensure the hook directly relates to the 'Core Conflict Type' and 'Detailed Premise' provided.**\n\nTHE PAINFUL DEPARTURE & RELENTLESS PURSUIT: Immediately follow the narrator’s agonizing decision to abandon the past, fueled by the sting of rejection and an unwavering resolve to prove their inherent worth. Detail the unyielding, almost obsessive pursuit of their ambition, painting a vivid picture of their solitary journey. **Integrate the 'Protagonist's Focus' and the initial ridicule mentioned in the 'Detailed Premise'.**\n\nTHE ARDUOUS ASCENSION & PROFOUND TRIUMPH: Use vivid, yet remarkably concise descriptions to depict the arduous struggle that follows. Each challenge, every setback, should be a visceral experience, demonstrating the protagonist's grit. Contrast this with the monumental, undeniable success that emerges. The narrative should subtly, almost subliminally, weave in profound life lessons or universal insights, allowing the listener to extract invaluable wisdom directly applicable to their own lives. **Clearly show the triumph within the 'Field of Triumph' and how it disproved the initial ridicule.**\n\nTHE CATHARTIC RETURN & POETIC JUSTICE: Conclude with a dramatic, yet deeply satisfying moment of return or confrontation. This is where the protagonist’s hard-won triumph is unequivocally clear and profoundly beneficial, delivering a cathartic reveal that resonates with undeniable poetic justice. The former doubters or betrayers must face the irrefutable evidence of the protagonist's success, leading to their quiet acknowledgment or profound regret.\n\nTONE & FLOW: Maintain an emotionally charged, intensely motivational tone throughout. The narrative must be resonant and impactful, deeply focusing on profound character arcs and the lingering psychological impact of past wrongs, without ever veering into overt melodrama. The narrative flow should be propulsive, emphasizing the enduring struggle, the profound wisdom gained through hardship, and the overwhelmingly satisfying payoff of hard-earned vindication and genuine happiness. Word count must not exceed 1000 words.\n\nYou are writing for an audience that craves authentic personal redemption arcs, undeniable poetic justice, and truly cathartic reveals. They yearn for stories where unwavering perseverance rewrites destiny, karma delivers its undeniable verdict, and invaluable knowledge can be absorbed and directly applied to their own lives.",
+              "type": "string"
+            },
+            {
+              "id": "b91856e5-5550-4a7c-b5fe-cf14f88730af",
+              "name": "=user_prompt",
+              "value": "=Write a 1000-word first-person story about someone who was fiercely mocked by their family for pursuing a \"ridiculous\" dream—like becoming a painter, a game developer, or starting a weird business. Everyone explicitly told them they’d fail and that they were an embarrassment to the family. Years later, they return home after making it big, having achieved monumental success. Include a powerful, unforgettable scene where the family witnesses firsthand what they have become and faces the consequences of their past derision. Ensure the tone is emotionally powerful, reflective, and delivers the signature cathartic impact of a Karma's Ledger story, ending on a positive and insightful note.\n\nWrite a 1000-word first-person story about someone who was fiercely mocked by their family for pursuing a dream initially deemed \"ridiculous\" and futile, explicitly told they’d fail and were an embarrassment. This protagonist, an {{ $json.output_protagonist_focus }}, was mocked for their pursuit of {{ $json.output_field_of_triumph }}, stemming from a {{ $json.output_core_conflict_type }}.\n\nYears later, they return home after achieving monumental success, having transformed barren lands into thriving ecosystems through their {{ $json.output_field_of_triumph }}, proving their worth beyond doubt.\n\nInclude a powerful, unforgettable scene where the family witnesses firsthand what they have become and faces the consequences of their past derision. Ensure the tone is emotionally powerful, reflective, and delivers the signature cathartic impact of a Karma's Ledger story, ending on a positive and insightful note.\n\nStory Premise for reference: \"{{ $json.output_premise }}\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1720,
+        295
+      ],
+      "id": "44608416-3793-4162-a450-36364aaca13c",
+      "name": "Set AI Prompts"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "877b1179-1a88-4910-ae25-ba10e0b5034d",
+              "name": "output",
+              "value": "={{ $('Transcript Generator Cleaned').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2380,
+        295
+      ],
+      "id": "b354cce6-d309-488b-b115-33a0cb1893af",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "output_core_conflict_type",
+              "type": "any"
+            },
+            {
+              "name": "output_protagonist_focus",
+              "type": "any"
+            },
+            {
+              "name": "output_field_of_triumph",
+              "type": "any"
+            },
+            {
+              "name": "output_title_idea",
+              "type": "any"
+            },
+            {
+              "name": "output_premise",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "db97b7c3-6814-48fc-a65c-16d4e467b5ce",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        1500,
+        295
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Transcript Generator": {
+      "main": [
+        [
+          {
+            "node": "Transcript Generator Cleaned",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set AI Prompts": {
+      "main": [
+        [
+          {
+            "node": "Transcript Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Set AI Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcript Generator Cleaned": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1160557c-908a-4919-a3ce-45e0c2028755",
+  "meta": {
+    "instanceId": "37fe6d8c3b2aaeda95afa9d59c8cbc7c79e8171e6cc2a68043e239f8403c390e"
+  },
+  "id": "nVxIGWVgjzSsTVOf",
+  "tags": []
+}
